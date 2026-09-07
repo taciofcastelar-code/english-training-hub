@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#101b34">
+<meta name="application-name" content="English Training Hub">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="English Hub">
+<meta name="description" content="Treinamento interativo de inglês geral, profissional, clínico, offshore e marítimo.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>English Training Hub v2 Robust</title>
+<style>
+:root {
+ --bg:#f4f7fb; --card:#fff; --text:#152033; --muted:#667085; --line:#e5e9f0;
+ --primary:#1e5df0; --soft:#edf3ff; --ok:#157a55; --bad:#b52f2f; --warn:#a66a00;
+}
+*{box-sizing:border-box} html{-webkit-text-size-adjust:100%} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:env(safe-area-inset-bottom);-webkit-tap-highlight-color:transparent}
+header{background:linear-gradient(135deg,#101b34,#1e5df0);color:white;padding:calc(20px + env(safe-area-inset-top)) 20px 20px} header h1{margin:0;font-size:26px} header p{margin:6px 0 0;opacity:.9}
+main{max-width:1180px;margin:auto;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:16px;box-shadow:0 4px 14px rgba(20,30,55,.05);margin-bottom:12px}
+.kpi{font-size:28px;font-weight:800;margin-top:6px} .muted{color:var(--muted);font-size:14px}
+nav{display:flex;gap:7px;overflow:auto;margin:14px 0;position:sticky;top:0;background:var(--bg);padding:7px 0;z-index:3}
+button{border:0;border-radius:9px;padding:10px 13px;min-height:44px;font-weight:700;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+nav button{background:#fff;border:1px solid var(--line);white-space:nowrap} nav button.active,.primary{background:var(--primary);color:white}
+.secondary{background:var(--soft);color:#2347a5} .danger{background:#fff0f0;color:#9d2929}
+section{display:none} section.active{display:block}
+.q{font-size:20px;font-weight:800;margin:12px 0} .opt{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);margin:7px 0}
+.opt.correct{background:#eaf8f2;border-color:var(--ok)} .opt.wrong{background:#fff0f0;border-color:var(--bad)}
+textarea,input,select{width:100%;padding:11px;border:1px solid var(--line);border-radius:9px;font-size:15px}
+.row{display:flex;gap:8px;flex-wrap:wrap} .feedback{padding:11px;border:1px solid var(--line);border-radius:9px;background:#f8fafc;margin:10px 0}
+.timer{font-size:38px;font-weight:800;text-align:center} .line{padding:10px 0;border-bottom:1px solid #edf0f4}
+.tag{display:inline-block;padding:5px 9px;border-radius:999px;background:#eef3ff;color:#2446a8;font-size:12px;margin:3px}
+.progress{height:10px;background:#e7ebf1;border-radius:999px;overflow:hidden} .progress span{height:100%;display:block;background:var(--primary);width:0}
+table{width:100%;border-collapse:collapse} td,th{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.small{font-size:13px} details{margin:9px 0} .pill{padding:5px 8px;border-radius:999px;background:#f3f5f8;font-size:12px}
+.center{text-align:center} .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:720px){.cols{grid-template-columns:1fr} header h1{font-size:22px} .q{font-size:18px} main{padding:10px 10px calc(14px + env(safe-area-inset-bottom))} nav{top:0}.card{padding:14px}.timer{font-size:34px}}
+</style>
+</head>
+<body>
+<header><h1>English Training Hub v2 — Robust Edition</h1><p>Conversação, pensamento em inglês, entrevista, enfermagem, emergência, offshore e marítimo.</p></header>
+<main>
+<div class="grid">
+<div class="card"><div class="muted">Respondidas</div><div class="kpi" id="kAnswered">0</div></div>
+<div class="card"><div class="muted">Taxa de acerto</div><div class="kpi" id="kAccuracy">0%</div></div>
+<div class="card"><div class="muted">Blocos dominados</div><div class="kpi" id="kMastered">0</div></div>
+<div class="card"><div class="muted">Erros em revisão</div><div class="kpi" id="kErrors">0</div></div>
+<div class="card"><div class="muted">Respostas rápidas treinadas</div><div class="kpi" id="kRapid">0</div></div>
+</div>
+
+<nav>
+<button class="active" data-target="dashboard">Dashboard</button>
+<button data-target="blocks">Blocos</button>
+<button data-target="quiz">Questões</button>
+<button data-target="rapid">Resposta rápida</button>
+<button data-target="think">Pense em inglês</button>
+<button data-target="conversation">Conversação</button>
+<button data-target="interview">Entrevista</button>
+<button data-target="clinical">Clínico</button>
+<button data-target="offshore">Offshore</button>
+<button data-target="marine">Marítimo</button>
+<button data-target="errors">Erros</button>
+</nav>
+
+<section id="dashboard" class="active">
+<div class="grid">
+<div class="card">
+<h3>Progresso geral</h3><div class="progress"><span id="overall"></span></div>
+<p class="muted">Meta: transformar estruturas conhecidas em respostas automáticas.</p>
+</div>
+<div class="card">
+<h3>Conteúdo desta versão</h3>
+<div class="tag">40 blocos</div>
+<div class="tag">30 questões</div>
+<div class="tag">18 respostas rápidas</div>
+<div class="tag">30 exercícios Think in English</div>
+<div class="tag">8 conversações</div>
+<div class="tag">15 entrevistas</div>
+<div class="tag">15 casos offshore</div>
+<div class="tag">6 situações marítimas</div>
+</div>
+<div class="card">
+<h3>Rotina de 30 minutos</h3>
+<div class="line">5 min — blocos</div><div class="line">5 min — questões</div><div class="line">5 min — resposta rápida</div>
+<div class="line">5 min — pense em inglês</div><div class="line">5 min — entrevista/offshore</div><div class="line">5 min — revisão de erros</div>
+</div>
+</div>
+<div class="card">
+<h3>Progressão metodológica</h3>
+<p>1. Reconhecer → 2. Completar → 3. Produzir → 4. Responder rápido → 5. Conversar → 6. Simular → 7. English only.</p>
+<p class="muted">Não é necessário dominar toda a gramática antes de avançar. O foco é reutilizar estruturas de alta frequência em contextos diferentes.</p>
+</div>
+</section>
+
+<section id="blocks"><div class="card">
+<h2>Blocos de frases</h2>
+<div class="row"><select id="blockLevel" onchange="renderBlock()"><option>Todos</option><option>Base</option><option>Core</option><option>Intermediate</option><option>Professional</option></select></div>
+<div id="blockBox"></div>
+<div class="row"><button class="primary" onclick="nextBlock()">Próximo bloco</button><button class="secondary" onclick="markMastered()">Marcar como dominado</button></div>
+</div></section>
+
+<section id="quiz"><div class="card">
+<h2>Banco de questões</h2>
+<div class="row"><select id="quizCat" onchange="resetQuiz()"><option>Todos</option><option>Core</option><option>Intermediate</option><option>Professional</option><option>Interview</option><option>Offshore</option></select></div>
+<div id="quizBox"></div>
+<button class="primary" onclick="nextQuestion()">Próxima questão</button>
+</div></section>
+
+<section id="rapid"><div class="card center">
+<h2>Resposta rápida</h2><p class="muted">Responda em voz alta antes de revelar o modelo.</p>
+<div class="row"><select id="rapidCat"><option>Todos</option><option>Daily</option><option>Interview</option><option>Professional</option><option>Offshore</option></select></div>
+<div id="rapidTimer" class="timer">10</div><div id="rapidPrompt" class="q"></div>
+<textarea id="rapidInput" rows="3" placeholder="Digite ou responda em voz alta..."></textarea>
+<div class="row" style="justify-content:center;margin-top:10px"><button class="primary" onclick="newRapid()">Nova situação</button><button class="secondary" onclick="showRapid()">Mostrar modelo</button></div>
+<div id="rapidFeedback"></div>
+</div></section>
+
+<section id="think"><div class="card">
+<h2>Pense em inglês</h2><p class="muted">Situação → inglês. Evite montar primeiro a frase completa em português.</p>
+<div id="thinkPrompt" class="q"></div><textarea rows="3" placeholder="Responda em inglês..."></textarea>
+<div class="row" style="margin-top:10px"><button class="primary" onclick="nextThink()">Próxima</button><button class="secondary" onclick="showThink()">Revelar</button></div><div id="thinkFeedback"></div>
+</div></section>
+
+<section id="conversation"><div class="card">
+<h2>Conversação simulada</h2><div class="row"><select id="convCat" onchange="renderConv()"><option>Todos</option><option>Daily</option><option>Family</option><option>Work</option><option>Clinical</option><option>Interview</option><option>Offshore</option></select></div>
+<div id="convBox"></div><button class="primary" onclick="nextConv()">Próxima conversa</button>
+</div></section>
+
+<section id="interview"><div class="card">
+<h2>Entrevista profissional</h2><div id="intBox"></div>
+<div class="row"><button class="primary" onclick="nextInterview()">Próxima pergunta</button><button class="secondary" onclick="showInterview()">Resposta-base</button></div>
+</div></section>
+
+<section id="clinical"><div class="card">
+<h2>Clinical & Emergency English</h2>
+<p class="muted">Treino focado em avaliação, comunicação clínica, prioridade e handover.</p>
+<div id="clinicalBox"></div><button class="primary" onclick="nextClinical()">Próximo cenário</button>
+</div></section>
+
+<section id="offshore"><div class="card">
+<h2>Offshore English</h2><div id="offBox"></div><button class="primary" onclick="nextOff()">Próximo caso</button>
+</div></section>
+
+<section id="marine"><div class="card">
+<h2>Maritime & Safety English</h2><div id="marineBox"></div><button class="primary" onclick="nextMarine()">Próxima situação</button>
+</div></section>
+
+<section id="errors"><div class="card">
+<h2>Revisão de erros</h2><div id="errorsBox"></div><button class="danger" onclick="clearErrors()">Limpar erros revisados</button>
+</div></section>
+</main>
+
+<script>
+const D={"blocks": [["I am + adjective/noun", "Base", ["I am ready.", "I am available.", "I am tired.", "I am responsible for the emergency room.", "I am a registered nurse.", "I am on duty today.", "I am interested in this position.", "I am comfortable working under pressure."]], ["I have + noun", "Base", ["I have experience in emergency care.", "I have a question.", "I have a headache.", "I have more than ten years of experience.", "I have a meeting this afternoon.", "I have responsibility for patient safety.", "I have good communication skills.", "I have offshore training."]], ["I work + place/area", "Base", ["I work in emergency care.", "I work with critical patients.", "I work at a public health service.", "I work on rotating shifts.", "I work with multidisciplinary teams.", "I work in pre-hospital care.", "I work with trauma patients.", "I work in occupational health activities."]], ["I need to + verb", "Core", ["I need to check the patient.", "I need to call the doctor.", "I need to finish the report.", "I need to improve my English.", "I need to check the equipment.", "I need to talk to my supervisor.", "I need to review the medication.", "I need to confirm the information."]], ["I have to + verb", "Core", ["I have to monitor the patient.", "I have to complete the checklist.", "I have to attend the meeting.", "I have to report the incident.", "I have to prepare the medication.", "I have to review the protocol.", "I have to update the records.", "I have to check the emergency trolley."]], ["I want to + verb", "Core", ["I want to work offshore.", "I want to improve my communication.", "I want to gain international experience.", "I want to become more fluent.", "I want to learn faster.", "I want to work in a safe environment.", "I want to develop my career.", "I want to communicate clearly."]], ["I would like to + verb", "Core", ["I would like to know more about the position.", "I would like to improve my English.", "I would like to clarify one point.", "I would like to join your team.", "I would like to ask a question.", "I would like to confirm the schedule.", "I would like to discuss my experience.", "I would like to understand the next step."]], ["I'm going to + verb", "Core", ["I'm going to check your blood pressure.", "I'm going to call the doctor.", "I'm going to review the equipment.", "I'm going to prepare the patient.", "I'm going to reassess the pain.", "I'm going to update the report.", "I'm going to check the oxygen cylinder.", "I'm going to explain the procedure."]], ["I can + verb", "Core", ["I can manage emergency situations.", "I can work under pressure.", "I can communicate with the team.", "I can assess critical patients.", "I can organize priorities.", "I can assist with patient transfer.", "I can work in remote environments.", "I can follow safety procedures."]], ["I can't + verb", "Core", ["I can't hear you clearly.", "I can't confirm that right now.", "I can't leave the patient alone.", "I can't access the system.", "I can't understand this part.", "I can't attend the meeting today.", "I can't find the equipment.", "I can't make that decision alone."]], ["Can you + verb?", "Core", ["Can you help me?", "Can you check the oxygen cylinder?", "Can you call the doctor?", "Can you bring the emergency bag?", "Can you repeat that, please?", "Can you monitor the patient?", "Can you check the medication?", "Can you send me the report?"]], ["Could you + verb?", "Core", ["Could you speak more slowly?", "Could you repeat the question?", "Could you send me the information?", "Could you explain that again?", "Could you help me with this patient?", "Could you confirm the time?", "Could you show me the procedure?", "Could you check this information?"]], ["Do you + verb?", "Core", ["Do you have pain?", "Do you work offshore?", "Do you understand?", "Do you need help?", "Do you feel dizzy?", "Do you take any medication?", "Do you smoke?", "Do you have any allergies?"]], ["Did you + verb?", "Core", ["Did you take any medication?", "Did you call the doctor?", "Did you check the equipment?", "Did you have any symptoms?", "Did you fall?", "Did you hit your head?", "Did you eat today?", "Did you inform your supervisor?"]], ["Have you + past participle?", "Core", ["Have you taken any medication?", "Have you had this pain before?", "Have you worked offshore before?", "Have you completed the training?", "Have you eaten today?", "Have you ever fainted?", "Have you informed the doctor?", "Have you checked the patient's allergies?"]], ["Are you + adjective/noun?", "Core", ["Are you okay?", "Are you allergic to any medication?", "Are you feeling better?", "Are you available tomorrow?", "Are you in pain?", "Are you ready?", "Are you the supervisor?", "Are you comfortable?"]], ["Where is + noun?", "Core", ["Where is the pain?", "Where is the emergency bag?", "Where is the clinic?", "Where is the nearest hospital?", "Where is the oxygen cylinder?", "Where is the supervisor?", "Where is the medication room?", "Where is the evacuation point?"]], ["What happened?", "Core", ["What happened?", "What happened before the pain started?", "What happened during the shift?", "What happened to the equipment?", "What happened after the fall?", "What happened this morning?", "What happened to your arm?", "What happened on the platform?"]], ["What do you mean?", "Core", ["What do you mean?", "What do you mean by stable?", "What do you mean by offshore experience?", "What do you mean exactly?", "What do you mean by urgent?", "What do you mean by safe?", "What do you mean by restricted area?", "What do you mean by medical clearance?"]], ["Let me + verb", "Core", ["Let me check.", "Let me see.", "Let me confirm that.", "Let me talk to the doctor.", "Let me review the report.", "Let me check your vital signs.", "Let me verify the medication.", "Let me explain the procedure."]], ["I'm not sure + clause", "Core", ["I'm not sure yet.", "I'm not sure about the time.", "I'm not sure if the patient is stable.", "I'm not sure what happened.", "I'm not sure if the equipment is ready.", "I'm not sure about the dose.", "I'm not sure if he can return to work.", "I'm not sure if the pain is improving."]], ["I think + clause", "Core", ["I think the patient is stable.", "I think we need more oxygen.", "I think this is the best option.", "I think I can help.", "I think we should reassess the patient.", "I think the equipment is ready.", "I think the pain is getting worse.", "I think we need medical evacuation."]], ["I don't think + clause", "Core", ["I don't think it's safe.", "I don't think we should wait.", "I don't think the patient is ready.", "I don't think that's necessary.", "I don't think he should return to work.", "I don't think the bleeding is controlled.", "I don't think this medication is correct.", "I don't think the patient can walk safely."]], ["It depends on + noun", "Intermediate", ["It depends on the situation.", "It depends on the patient's condition.", "It depends on the weather.", "It depends on the schedule.", "It depends on the medical assessment.", "It depends on the risk level.", "It depends on the available resources.", "It depends on the evacuation plan."]], ["As far as I know", "Intermediate", ["As far as I know, the equipment is ready.", "As far as I know, the patient is stable.", "As far as I know, the meeting is tomorrow.", "As far as I know, there were no complications.", "As far as I know, the protocol has not changed.", "As far as I know, the helicopter is available.", "As far as I know, the worker has no allergies.", "As far as I know, the report is complete."]], ["I usually + verb", "Intermediate", ["I usually start work early.", "I usually check the equipment first.", "I usually review the patient chart.", "I usually study English at night.", "I usually prepare before the shift.", "I usually confirm the medication twice.", "I usually communicate changes immediately.", "I usually review emergency supplies."]], ["I used to + verb", "Intermediate", ["I used to work in the emergency department.", "I used to do night shifts.", "I used to work in a hospital.", "I used to study English only occasionally.", "I used to work mainly with trauma patients.", "I used to live closer to work.", "I used to take more weekend shifts.", "I used to avoid speaking English."]], ["I'm used to + ing/noun", "Intermediate", ["I'm used to working under pressure.", "I'm used to night shifts.", "I'm used to dealing with emergencies.", "I'm used to working in a team.", "I'm used to making quick decisions.", "I'm used to critical patients.", "I'm used to long shifts.", "I'm used to following strict protocols."]], ["If necessary, I can + verb", "Intermediate", ["If necessary, I can stay longer.", "If necessary, I can call the doctor.", "If necessary, I can arrange transport.", "If necessary, I can reassess the patient.", "If necessary, I can activate the emergency response.", "If necessary, I can repeat the assessment.", "If necessary, I can contact the medical coordinator.", "If necessary, I can prepare the patient for evacuation."]], ["The priority is to + verb", "Professional", ["The priority is to stabilize the patient.", "The priority is to ensure safety.", "The priority is to control the bleeding.", "The priority is to maintain the airway.", "The priority is to identify life-threatening problems.", "The priority is to prevent deterioration.", "The priority is to protect the team.", "The priority is to prepare safe transport."]], ["We need to + verb", "Professional", ["We need to reassess the patient.", "We need to prepare the equipment.", "We need to call the medical coordinator.", "We need to review the evacuation plan.", "We need to confirm the medication.", "We need to document the incident.", "We need to isolate the area.", "We need to communicate clearly."]], ["We should + verb", "Professional", ["We should monitor the patient closely.", "We should repeat the vital signs.", "We should follow the protocol.", "We should prepare for transfer.", "We should check the airway first.", "We should notify the supervisor.", "We should reassess the pain.", "We should document every intervention."]], ["There is / There are", "Core", ["There is a patient waiting outside.", "There is a problem with the oxygen supply.", "There is no active bleeding.", "There is a meeting at three o'clock.", "There are two patients in the clinic.", "There are no signs of respiratory distress.", "There are three oxygen cylinders available.", "There are several tasks to complete."]], ["The patient is + adjective", "Professional", ["The patient is stable.", "The patient is conscious.", "The patient is confused.", "The patient is pale.", "The patient is short of breath.", "The patient is alert and oriented.", "The patient is hemodynamically stable.", "The patient is ready for transfer."]], ["The patient has + noun", "Professional", ["The patient has chest pain.", "The patient has a minor injury.", "The patient has a history of hypertension.", "The patient has no known allergies.", "The patient has difficulty breathing.", "The patient has active bleeding.", "The patient has abdominal pain.", "The patient has a fever."]], ["The patient needs + noun/to + verb", "Professional", ["The patient needs oxygen.", "The patient needs monitoring.", "The patient needs further evaluation.", "The patient needs medical evacuation.", "The patient needs to rest.", "The patient needs to be reassessed.", "The patient needs to see a doctor.", "The patient needs to remain in the clinic."]], ["Please + verb", "Core", ["Please sit down.", "Please take a deep breath.", "Please tell me where it hurts.", "Please stay still.", "Please wait here.", "Please follow me.", "Please show me your identification.", "Please call me if the pain gets worse."]], ["Could you tell me + wh-clause?", "Intermediate", ["Could you tell me where the pain is?", "Could you tell me when the symptoms started?", "Could you tell me what happened?", "Could you tell me which medications you take?", "Could you tell me how you feel now?", "Could you tell me who your supervisor is?", "Could you tell me why you stopped the medication?", "Could you tell me how severe the pain is?"]], ["How long have you + past participle?", "Intermediate", ["How long have you had this pain?", "How long have you worked here?", "How long have you felt dizzy?", "How long have you been on this medication?", "How long have you been feeling short of breath?", "How long have you worked offshore?", "How long have you had this cough?", "How long have you been awake?"]], ["How often do you + verb?", "Intermediate", ["How often do you exercise?", "How often do you check your blood pressure?", "How often do you take this medication?", "How often do you work night shifts?", "How often do you have headaches?", "How often do you feel dizzy?", "How often do you attend training?", "How often do you use English at work?"]]], "questions": [{"cat": "Core", "q": "Como dizer “Preciso verificar os sinais vitais”?", "opts": ["I need check the vital signs.", "I need to check the vital signs.", "I need checking the vital signs.", "I am need to check the vital signs."], "a": 1, "exp": "Depois de need, use to + verbo: need to check."}, {"cat": "Core", "q": "Complete: I have to ___ the checklist.", "opts": ["completed", "complete", "completing", "completes"], "a": 1, "exp": "Depois de have to, use o verbo na forma base."}, {"cat": "Core", "q": "Qual resposta é natural para “Can you help me?”", "opts": ["Yes, I can help you.", "Yes, I helping.", "Yes, I can helped.", "Yes, help I."], "a": 0, "exp": "Após can, use o verbo na forma base."}, {"cat": "Core", "q": "Como perguntar “Você já teve essa dor antes?”", "opts": ["Did you had this pain before?", "Have you had this pain before?", "Have you have this pain before?", "Do you had this pain before?"], "a": 1, "exp": "Use present perfect: Have you had... ?"}, {"cat": "Core", "q": "Como pedir para alguém repetir?", "opts": ["Could you repeat that, please?", "Could you repeated that?", "You can repeating?", "Repeat you that?"], "a": 0, "exp": "Could you + verbo base é uma forma educada e natural."}, {"cat": "Professional", "q": "Complete: The priority is to ___ the patient.", "opts": ["stabilized", "stabilize", "stabilizing", "stabilizes"], "a": 1, "exp": "Depois de to, use o verbo na forma base."}, {"cat": "Core", "q": "Como dizer “Vou verificar sua pressão arterial”?", "opts": ["I go check your blood pressure.", "I'm going to check your blood pressure.", "I going checking your pressure.", "I will to checking your blood pressure."], "a": 1, "exp": "Be going to + verbo base."}, {"cat": "Professional", "q": "Qual pergunta é adequada para investigar irradiação da dor?", "opts": ["Does the pain radiate to your arm or jaw?", "The pain goes arm?", "Does pain radiated to arm?", "Pain is radiate where?"], "a": 0, "exp": "Essa é uma formulação clínica natural e correta."}, {"cat": "Core", "q": "Como dizer “Não tenho certeza ainda”?", "opts": ["I don't sure yet.", "I'm not sure yet.", "I not sure yet.", "I am no sure yet."], "a": 1, "exp": "Use be + not sure: I'm not sure."}, {"cat": "Core", "q": "Qual pergunta está correta?", "opts": ["Where the pain is?", "Where is the pain?", "Where pain is?", "Where does the pain is?"], "a": 1, "exp": "Com verbo to be: question word + be + sujeito."}, {"cat": "Intermediate", "q": "Como dizer “Depende da condição do paciente”?", "opts": ["It depend from patient condition.", "It depends on the patient's condition.", "It is depends on patient.", "It depending of patient condition."], "a": 1, "exp": "A expressão correta é it depends on."}, {"cat": "Intermediate", "q": "Como dizer “Eu costumava trabalhar no pronto-socorro”?", "opts": ["I am used to work in emergency.", "I used to work in the emergency department.", "I use to worked emergency.", "I was used work in emergency."], "a": 1, "exp": "Used to + verbo base descreve hábito ou situação passada."}, {"cat": "Intermediate", "q": "Como dizer “Estou acostumado a trabalhar sob pressão”?", "opts": ["I used to work under pressure.", "I'm used to working under pressure.", "I'm use to work under pressure.", "I am used work under pressure."], "a": 1, "exp": "Be used to + substantivo ou verbo com -ing."}, {"cat": "Professional", "q": "Como dizer “Se necessário, posso chamar o médico”?", "opts": ["If necessary, I can call the doctor.", "If need, I can calling doctor.", "If necessary, I can called doctor.", "Necessary, I call can doctor."], "a": 0, "exp": "Estrutura correta: If necessary, I can + verbo."}, {"cat": "Professional", "q": "Qual frase descreve melhor um paciente orientado?", "opts": ["The patient is alert and oriented.", "The patient alert is oriented.", "The patient is orienting.", "The patient are alert."], "a": 0, "exp": "Alert and oriented é uma formulação clínica padrão."}, {"cat": "Professional", "q": "Como dizer “O paciente precisa de avaliação adicional”?", "opts": ["The patient need more evaluation.", "The patient needs further evaluation.", "The patient needing further evaluate.", "The patient needs evaluate further."], "a": 1, "exp": "Com he/she/the patient, use needs. Further evaluation é uma expressão natural."}, {"cat": "Professional", "q": "Qual frase é adequada para handover?", "opts": ["The patient is stable, alert and oriented.", "Patient stable alert orientation.", "The patient have stable vital.", "He stable is."], "a": 0, "exp": "Frase curta, clara e profissional para passagem de caso."}, {"cat": "Core", "q": "Como dizer “Há um problema com o suprimento de oxigênio”?", "opts": ["There have a problem with oxygen.", "There is a problem with the oxygen supply.", "It have problem oxygen.", "There are a problem with oxygen supply."], "a": 1, "exp": "Use there is para singular."}, {"cat": "Core", "q": "Como dizer “Há três cilindros disponíveis”?", "opts": ["There is three cylinders available.", "There are three cylinders available.", "There have three cylinders.", "It are three cylinders."], "a": 1, "exp": "Use there are para plural."}, {"cat": "Professional", "q": "Qual comando é mais adequado para um paciente com tontura?", "opts": ["Please sit down.", "You sit now.", "Sitting please you.", "Please to sit."], "a": 0, "exp": "Please + verbo base é natural e profissional."}, {"cat": "Intermediate", "q": "Como perguntar “Há quanto tempo você está com essa dor?”", "opts": ["How long do you have this pain?", "How long have you had this pain?", "How much time you have pain?", "Since when you are pain?"], "a": 1, "exp": "Use How long have you had... para duração até o presente."}, {"cat": "Intermediate", "q": "Como perguntar “Com que frequência você verifica sua pressão?”", "opts": ["How often do you check your blood pressure?", "How many you check pressure?", "How often you checking pressure?", "How frequently are check pressure?"], "a": 0, "exp": "How often do you + verbo base."}, {"cat": "Professional", "q": "Como dizer “Precisamos reavaliar o paciente”?", "opts": ["We need reassess the patient.", "We need to reassess the patient.", "We need reassessing patient.", "We are need to reassess."], "a": 1, "exp": "Need to + verbo base."}, {"cat": "Professional", "q": "Como dizer “Devemos monitorar o paciente de perto”?", "opts": ["We should monitor the patient closely.", "We should monitoring patient close.", "We must to monitor close.", "We should monitored the patient."], "a": 0, "exp": "Should + verbo base; closely é o advérbio adequado."}, {"cat": "Interview", "q": "Qual frase é mais adequada em entrevista?", "opts": ["I have more than ten years of experience in emergency care.", "I have ten years emergency experience more.", "I am having experience ten years.", "I have experience since ten years."], "a": 0, "exp": "Forma natural para falar de experiência profissional."}, {"cat": "Interview", "q": "Qual resposta descreve inglês em evolução de forma profissional?", "opts": ["My English is intermediate and improving.", "My English is bad but maybe okay.", "I don't speak nothing.", "English is problem for me always."], "a": 0, "exp": "A frase é objetiva e demonstra desenvolvimento contínuo."}, {"cat": "Offshore", "q": "Como dizer “Precisamos preparar a evacuação médica”?", "opts": ["We need prepare medical evacuation.", "We need to prepare the medical evacuation.", "We needing evacuation medical.", "We are need medical evacuate."], "a": 1, "exp": "Need to + verbo base; medical evacuation é a expressão correta."}, {"cat": "Offshore", "q": "Qual frase é adequada para comunicação por rádio?", "opts": ["Please bring a stretcher to the clinic.", "Bring stretcher clinic now you.", "You bring the stretcher maybe.", "Please to bringing stretcher."], "a": 0, "exp": "Mensagem curta, direta e operacional."}, {"cat": "Professional", "q": "Como dizer “O paciente não tem sangramento ativo”?", "opts": ["The patient no active bleeding.", "There is no active bleeding.", "The patient has no bleeding active.", "No bleed is active patient."], "a": 1, "exp": "There is no active bleeding é uma formulação clara e comum."}, {"cat": "Professional", "q": "Qual frase indica piora da dor?", "opts": ["The pain is getting worse.", "The pain is become badder.", "The pain get worse nowed.", "Pain worsing."], "a": 0, "exp": "Getting worse = piorando."}], "rapid": [{"cat": "Daily", "p": "A friend asks: “How was your day?”", "r": "It was busy, but it was a good day. I had a lot of work."}, {"cat": "Daily", "p": "Someone asks: “What are you doing tonight?”", "r": "I'm going to study English and rest at home."}, {"cat": "Daily", "p": "Someone asks: “Do you need help?”", "r": "Yes, please. Could you help me with this?"}, {"cat": "Daily", "p": "You did not understand what someone said.", "r": "Sorry, could you repeat that more slowly, please?"}, {"cat": "Interview", "p": "Recruiter: “Tell me about yourself.”", "r": "I'm a registered nurse with more than ten years of experience in emergency and pre-hospital care."}, {"cat": "Interview", "p": "Recruiter: “Why do you want to work offshore?”", "r": "I want to combine my emergency nursing experience with occupational health and offshore operations."}, {"cat": "Interview", "p": "Recruiter: “What are your strengths?”", "r": "My main strengths are emergency decision-making, teamwork, patient assessment and communication."}, {"cat": "Interview", "p": "Recruiter: “How do you handle pressure?”", "r": "I prioritize the main risk, follow protocols, communicate clearly and reassess frequently."}, {"cat": "Professional", "p": "Supervisor: “Is the patient stable?”", "r": "Yes. The patient is stable at the moment, but I'm continuing to monitor the vital signs."}, {"cat": "Professional", "p": "Patient: “I have chest pain.”", "r": "Please sit down. I need to check your vital signs and ask you a few questions."}, {"cat": "Professional", "p": "Patient: “I feel dizzy.”", "r": "Please sit down. I'm going to check your blood pressure and oxygen saturation."}, {"cat": "Professional", "p": "Colleague: “Did you call the doctor?”", "r": "Yes, I did. The doctor is on the way."}, {"cat": "Professional", "p": "Colleague: “We need to transfer the patient.”", "r": "Okay. I'll prepare the patient and check the transport equipment."}, {"cat": "Offshore", "p": "Radio: the message was not clear.", "r": "Could you repeat that, please?"}, {"cat": "Offshore", "p": "Supervisor: “Can you check the emergency trolley?”", "r": "Sure. I'll check the oxygen, suction, monitor, medications and airway equipment."}, {"cat": "Offshore", "p": "A worker has a minor cut on the forearm.", "r": "I'm going to clean the wound, control the bleeding and apply a dressing."}, {"cat": "Offshore", "p": "A worker complains of shortness of breath.", "r": "Please sit down. I need to check your oxygen saturation, respiratory rate and other vital signs."}, {"cat": "Offshore", "p": "The patient needs onshore evaluation.", "r": "The patient is stable, but he needs further evaluation onshore. We are preparing medical evacuation."}], "think": [["Você chega ao trabalho e precisa checar os equipamentos.", "I need to check the equipment."], ["Você vai medir a pressão do paciente.", "I'm going to check your blood pressure."], ["Você não entendeu a pergunta.", "Could you repeat the question, please?"], ["Você precisa ligar para o médico.", "I need to call the doctor."], ["Você quer dizer que o paciente está estável.", "The patient is stable."], ["Você precisa saber quando a dor começou.", "When did the pain start?"], ["Você precisa saber se já teve essa dor antes.", "Have you had this pain before?"], ["Você está acostumado a trabalhar sob pressão.", "I'm used to working under pressure."], ["Você quer dizer que a prioridade é estabilizar o paciente.", "The priority is to stabilize the patient."], ["Você não tem certeza se é seguro.", "I'm not sure if it's safe."], ["Você quer pedir ajuda.", "Can you help me?"], ["Você vai revisar o relatório.", "I'm going to review the report."], ["Você trabalha com pacientes críticos.", "I work with critical patients."], ["Você tem mais de dez anos de experiência.", "I have more than ten years of experience."], ["Você quer confirmar uma informação.", "Let me confirm that."], ["Você precisa reavaliar o paciente.", "We need to reassess the patient."], ["Você quer dizer que a dor está piorando.", "The pain is getting worse."], ["Você quer dizer que o paciente precisa de oxigênio.", "The patient needs oxygen."], ["Você quer pedir para a pessoa sentar.", "Please sit down."], ["Você precisa saber há quanto tempo a pessoa tem essa dor.", "How long have you had this pain?"], ["Você precisa perguntar com que frequência ela toma o remédio.", "How often do you take this medication?"], ["Você quer dizer que há um problema com o oxigênio.", "There is a problem with the oxygen supply."], ["Você quer dizer que há três cilindros disponíveis.", "There are three oxygen cylinders available."], ["Você quer dizer que não há sangramento ativo.", "There is no active bleeding."], ["Você quer dizer que precisa preparar a evacuação médica.", "We need to prepare the medical evacuation."], ["Você quer dizer que vai explicar o procedimento.", "I'm going to explain the procedure."], ["Você quer dizer que o paciente está alerta e orientado.", "The patient is alert and oriented."], ["Você quer dizer que precisa verificar as alergias.", "I need to check the patient's allergies."], ["Você quer dizer que o trabalhador não deve retornar ao trabalho ainda.", "I don't think he should return to work yet."], ["Você quer dizer que a decisão depende da avaliação médica.", "It depends on the medical assessment."]], "conversations": [{"cat": "Daily", "title": "Between friends", "turns": [["Friend", "How was your day?", "It was busy, but it was good. I had a lot of work."], ["Friend", "Are you tired?", "A little, but I'm okay."], ["Friend", "What are you doing tonight?", "I'm going to study English and rest."]]}, {"cat": "Family", "title": "At home", "turns": [["Family member", "Do you need anything from the supermarket?", "Yes, please. We need milk, bread and fruit."], ["Family member", "Anything else?", "No, that's all. Thank you."]]}, {"cat": "Work", "title": "Beginning of shift", "turns": [["Supervisor", "Is the emergency equipment ready?", "I'm checking it now. I'll confirm in a few minutes."], ["Supervisor", "Please check the oxygen supply too.", "Sure. I'll check the cylinders and regulators."]]}, {"cat": "Clinical", "title": "Chest pain assessment", "turns": [["Patient", "I have chest pain.", "Please sit down. I need to check your vital signs."], ["Nurse prompt", "Ask when the pain started.", "When did the pain start?"], ["Nurse prompt", "Ask if it radiates.", "Does the pain radiate to your arm, back or jaw?"]]}, {"cat": "Clinical", "title": "Dizziness", "turns": [["Patient", "I feel dizzy.", "Please sit down. I'm going to check your blood pressure and oxygen saturation."], ["Patient", "Is it serious?", "I'm assessing you now. I'll explain what I find."]]}, {"cat": "Interview", "title": "Job interview", "turns": [["Recruiter", "Tell me about yourself.", "I'm a registered nurse with more than ten years of experience in emergency and pre-hospital care."], ["Recruiter", "Why offshore?", "I want to combine my emergency experience with occupational health and offshore operations."], ["Recruiter", "What are your strengths?", "Clinical assessment, teamwork, communication and emergency decision-making."]]}, {"cat": "Offshore", "title": "Radio communication", "turns": [["Radio", "Medical team, do you copy?", "Medical team here. Go ahead."], ["Radio", "We have an injured worker near the workshop.", "Copy. Please confirm the worker's condition and exact location."], ["Radio", "Minor leg injury, conscious and stable.", "Copy. We are responding now."]]}, {"cat": "Offshore", "title": "Medical evacuation", "turns": [["Medical coordinator", "Why does the patient need evacuation?", "The patient is stable, but he needs further evaluation and resources that are not available onboard."], ["Medical coordinator", "Is he ready for transport?", "Yes. He is stable, monitored and prepared for transfer."]]}], "interviews": [["Tell me about yourself.", "I'm a registered nurse with more than ten years of experience in emergency, pre-hospital and critical care. I currently work with emergency response and technical support, and I am preparing for opportunities in occupational and offshore nursing."], ["Why do you want to work offshore?", "I want to combine my emergency nursing experience with occupational health, safety culture and offshore operations. I also want to develop my career in this field."], ["What are your strengths?", "My main strengths are clinical assessment, emergency decision-making, teamwork, communication and the ability to stay organized under pressure."], ["What is your experience with emergencies?", "I have extensive experience with clinical emergencies, trauma, critical patients, stabilization, monitoring and patient transport."], ["How do you deal with a critical patient?", "I assess the main threats first, follow the ABC approach, stabilize the patient, communicate with the team and reassess continuously."], ["How would you describe your English?", "My English is intermediate and improving. I study consistently and I am focused on becoming more fluent for professional communication."], ["Why should we hire you?", "I bring strong emergency experience, a safety-focused mindset, teamwork and a clear commitment to developing my career in offshore nursing."], ["Describe a difficult situation at work.", "I focus on the main risk, organize priorities, communicate clearly and make decisions based on patient safety and established protocols."], ["How do you work in a team?", "I communicate clearly, respect each professional's role, share relevant information and support the team during critical situations."], ["How do you prioritize tasks?", "I identify what presents the greatest risk, address urgent problems first and then organize the remaining tasks according to safety and clinical priority."], ["What do you know about offshore nursing?", "Offshore nursing combines emergency care, occupational health, health promotion, prevention, documentation and support for safe operations in a remote environment."], ["How do you handle conflict?", "I stay professional, listen to the people involved, focus on facts and try to find a solution that protects safety and teamwork."], ["What are you doing to improve your English?", "I practice every day using structured phrases, professional vocabulary, listening, speaking and simulated interviews."], ["What are your career goals?", "My goal is to consolidate my career in occupational and offshore nursing and continue developing my clinical and communication skills."], ["Are you comfortable working in remote environments?", "Yes. My background in emergency care has prepared me to work with limited resources, prioritize risks and remain organized under pressure."]], "offshore": [["Chest pain on board", "A 48-year-old worker arrives at the clinic with chest pain and sweating.", "Say your first assessment steps in English.", "Please sit down. I need to check your vital signs. Tell me where the pain is, when it started and whether it radiates."], ["Emergency trolley", "You are starting the shift and need to verify the emergency trolley.", "Describe what you are going to check.", "I'm going to check the oxygen supply, suction equipment, monitor, emergency medications, airway equipment and expiry dates."], ["Radio communication", "You need a stretcher urgently at the clinic.", "Make a short radio call.", "Medical team to response crew: please bring a stretcher to the clinic. We have a patient requiring urgent transport."], ["Handover", "You are transferring a stable patient after a minor leg injury.", "Give a short handover.", "The patient is stable, alert and oriented. He has a minor leg injury, no active bleeding and stable vital signs."], ["Heat exhaustion", "A worker arrives after prolonged heat exposure with dizziness and weakness.", "Give your first instructions.", "Please sit down in a cool area. I'm going to check your vital signs and hydration status."], ["Minor trauma", "A worker has a superficial cut on the forearm.", "Explain what you will do.", "I'm going to clean the wound, control any bleeding, assess the injury and apply a dressing."], ["Medical evacuation", "The patient needs evaluation onshore.", "Explain the plan.", "The patient is stable, but he needs further evaluation onshore. We are preparing the medical evacuation and handover information."], ["Medication check", "Before administering medication, explain what you are checking.", "I'm checking the patient's identity, allergies, medication, dose, route and time before administration."], ["Shortness of breath", "A worker reports difficulty breathing after exertion.", "Start the assessment.", "Please sit down. I need to check your oxygen saturation, respiratory rate, heart rate and other vital signs."], ["Fall from standing height", "A worker slipped and fell but is conscious.", "Ask key questions.", "Did you hit your head? Did you lose consciousness? Where does it hurt? Are you feeling dizzy?"], ["Return to work", "A worker feels better after treatment but still has mild symptoms.", "Explain your decision.", "The symptoms have improved, but I don't think he should return to work yet. I need to reassess him first."], ["Safety incident", "There was a minor chemical splash, with no current symptoms.", "Explain initial action.", "The priority is to remove the worker from exposure, follow decontamination procedures and assess for symptoms."], ["Oxygen supply issue", "You notice low pressure in one cylinder.", "Report the issue.", "There is a problem with one oxygen cylinder. The pressure is low, so I am replacing it and checking the backup supply."], ["Remote consultation", "You need to update the medical coordinator.", "Give a concise update.", "The patient is stable, alert and oriented. Vital signs are within acceptable limits, but the symptoms persist. I recommend further medical evaluation."], ["Shift handover", "You are ending your shift with one patient under observation.", "Give a handover.", "One patient remains under observation. He is stable, symptoms are improving, and the next vital-sign check is due in thirty minutes."]], "marine": [["Muster station", "Explain where the worker should go during an emergency.", "Please proceed to your designated muster station and follow the emergency instructions."], ["Helideck safety", "A helicopter operation is about to start.", "Give a safety reminder.", "Stay clear of the helideck unless you are authorized and follow the directions of the helideck team."], ["Restricted area", "Someone is approaching a restricted area.", "Warn them politely.", "Please stop here. This is a restricted area. You need authorization to enter."], ["PPE", "A worker is missing eye protection.", "Correct the situation.", "Please put on your safety glasses before entering the work area."], ["Permit to work", "You need to confirm authorization.", "Ask a simple question.", "Do you have a valid permit to work for this task?"], ["Emergency drill", "A drill is starting.", "Give an instruction.", "This is an emergency drill. Please follow the instructions and proceed to the muster station."]]};
+let S=JSON.parse(localStorage.getItem("eth_v2_robust")||'{"answered":0,"correct":0,"mastered":0,"errors":[],"rapid":0}');
+let bi=0,qi=0,ri=0,ti=0,ci=0,ii=0,oi=0,mi=0,cli=0,timer=null;
+
+function save(){localStorage.setItem("eth_v2_robust",JSON.stringify(S));updateKPIs()}
+function updateKPIs(){
+ kAnswered.textContent=S.answered;
+ let acc=S.answered?Math.round(S.correct/S.answered*100):0;
+ kAccuracy.textContent=acc+"%";kMastered.textContent=S.mastered;kErrors.textContent=S.errors.length;kRapid.textContent=S.rapid||0;
+ overall.style.width=Math.min(100,Math.round(acc*.5+Math.min(S.mastered,40)*1.25))+"%";
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+ document.querySelectorAll("section").forEach(x=>x.classList.remove("active"));
+ b.classList.add("active");document.getElementById(b.dataset.target).classList.add("active");
+ if(b.dataset.target==="errors")renderErrors();
+});
+
+function filteredBlocks(){let f=blockLevel.value;return D.blocks.filter(x=>f==="Todos"||x[1]===f)}
+function renderBlock(){let arr=filteredBlocks();if(!arr.length)return;bi%=arr.length;let b=arr[bi];blockBox.innerHTML=`<p class="pill">${b[1]}</p><h3>${b[0]}</h3>`+b[2].map(x=>`<div class=line>${x}</div>`).join("")}
+function nextBlock(){bi++;renderBlock()} function markMastered(){S.mastered++;save();nextBlock()}
+
+function filteredQs(){let f=quizCat.value;return D.questions.filter(x=>f==="Todos"||x.cat===f)}
+function resetQuiz(){qi=0;renderQuestion()}
+function renderQuestion(){let arr=filteredQs();if(!arr.length)return;qi%=arr.length;let q=arr[qi];quizBox.innerHTML=`<p class=pill>${q.cat}</p><div class=q>${q.q}</div>`+q.opts.map((o,i)=>`<button class=opt onclick="answerQ(${i},this)">${o}</button>`).join("")+`<div id=qFeedback></div>`}
+function answerQ(i,e){let arr=filteredQs(),q=arr[qi];if(qFeedback.innerHTML)return;S.answered++;let opts=quizBox.querySelectorAll(".opt");opts[q.a].classList.add("correct");if(i===q.a){S.correct++;qFeedback.innerHTML=`<div class=feedback><b>Correto.</b> ${q.exp}</div>`}else{e.classList.add("wrong");S.errors.push({q:q.q,a:q.opts[q.a],e:q.exp,cat:q.cat});qFeedback.innerHTML=`<div class=feedback><b>Revisar.</b> ${q.exp}</div>`}save()}
+function nextQuestion(){qi++;renderQuestion()}
+
+function rapidPool(){let f=rapidCat.value;return D.rapid.filter(x=>f==="Todos"||x.cat===f)}
+function newRapid(){let arr=rapidPool();ri=Math.floor(Math.random()*arr.length);rapidPrompt.textContent=arr[ri].p;rapidFeedback.innerHTML="";rapidInput.value="";S.rapid=(S.rapid||0)+1;save();let t=10;rapidTimer.textContent=t;clearInterval(timer);timer=setInterval(()=>{t--;rapidTimer.textContent=t;if(t<=0)clearInterval(timer)},1000)}
+function showRapid(){let arr=rapidPool();rapidFeedback.innerHTML=`<div class=feedback><b>Resposta-modelo:</b><br>${arr[ri].r}</div>`}
+
+function renderThink(){ti%=D.think.length;thinkPrompt.textContent=D.think[ti][0];thinkFeedback.innerHTML=""}
+function nextThink(){ti++;renderThink()} function showThink(){thinkFeedback.innerHTML=`<div class=feedback><b>Resposta:</b> ${D.think[ti][1]}</div>`}
+
+function convPool(){let f=convCat.value;return D.conversations.filter(x=>f==="Todos"||x.cat===f)}
+function renderConv(){let arr=convPool();if(!arr.length)return;ci%=arr.length;let c=arr[ci];convBox.innerHTML=`<p class=pill>${c.cat}</p><h3>${c.title}</h3>`+c.turns.map((t,i)=>`<div class=line><b>${t[0]}:</b> ${t[1]}<br><textarea rows=2 placeholder="Sua resposta em inglês..."></textarea><details><summary>Ver resposta sugerida</summary><div class=feedback>${t[2]}</div></details></div>`).join("")}
+function nextConv(){ci++;renderConv()}
+
+function renderInterview(){ii%=D.interviews.length;intBox.innerHTML=`<div class=q>${D.interviews[ii][0]}</div><textarea rows=5 placeholder="Responda como em uma entrevista real..."></textarea><div id=intFeedback></div>`}
+function nextInterview(){ii++;renderInterview()} function showInterview(){intFeedback.innerHTML=`<div class=feedback><b>Resposta-base:</b><br>${D.interviews[ii][1]}</div>`}
+
+function clinicalPool(){return D.offshore.filter(x=>["Chest pain on board","Handover","Heat exhaustion","Minor trauma","Shortness of breath","Fall from standing height","Return to work","Remote consultation","Shift handover"].includes(x[0]))}
+function renderClinical(){let arr=clinicalPool();cli%=arr.length;let c=arr[cli];clinicalBox.innerHTML=`<h3>${c[0]}</h3><p>${c[1]}</p><div class=q>${c[2]}</div><textarea rows=4 placeholder="Responda em inglês..."></textarea><details><summary>Ver modelo</summary><div class=feedback>${c[3]}</div></details>`}
+function nextClinical(){cli++;renderClinical()}
+
+function renderOff(){oi%=D.offshore.length;let c=D.offshore[oi];offBox.innerHTML=`<h3>${c[0]}</h3><p>${c[1]}</p><div class=q>${c[2]}</div><textarea rows=4 placeholder="Responda em inglês..."></textarea><details><summary>Ver modelo</summary><div class=feedback>${c[3]}</div></details>`}
+function nextOff(){oi++;renderOff()}
+
+function renderMarine(){mi%=D.marine.length;let c=D.marine[mi];marineBox.innerHTML=`<h3>${c[0]}</h3><p>${c[1]}</p><textarea rows=3 placeholder="Responda em inglês..."></textarea><details><summary>Ver modelo</summary><div class=feedback>${c[2]}</div></details>`}
+function nextMarine(){mi++;renderMarine()}
+
+function renderErrors(){if(!S.errors.length){errorsBox.innerHTML='<p class=muted>Nenhum erro registrado.</p>';return}errorsBox.innerHTML='<table><tr><th>Categoria</th><th>Questão</th><th>Resposta</th></tr>'+S.errors.slice().reverse().map(x=>`<tr><td>${x.cat}</td><td>${x.q}<div class=muted>${x.e}</div></td><td>${x.a}</td></tr>`).join('')+'</table>'}
+function clearErrors(){S.errors=[];save();renderErrors()}
+
+renderBlock();renderQuestion();newRapid();renderThink();renderConv();renderInterview();renderClinical();renderOff();renderMarine();updateKPIs();
+</script>
+
+<!-- ===== MÓDULO UNIVERSAL DE MÉTRICAS v1 ===== -->
+<style id="metrics-module-style">
+#metricsFab{position:fixed;right:18px;bottom:18px;z-index:99999;border:0;border-radius:999px;padding:12px 16px;background:#2563eb;color:#fff;font-weight:800;box-shadow:0 10px 28px rgba(0,0,0,.28);cursor:pointer}
+#metricsPanel{position:fixed;right:18px;bottom:72px;width:min(420px,calc(100vw - 28px));max-height:78vh;overflow:auto;z-index:99998;background:#0f172a;color:#eef4ff;border:1px solid #334155;border-radius:18px;padding:16px;box-shadow:0 18px 50px rgba(0,0,0,.38);display:none;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
+#metricsPanel *{box-sizing:border-box}#metricsPanel h2{margin:0 0 4px;font-size:18px}#metricsPanel .mmuted{color:#94a3b8;font-size:12px}
+#metricsPanel .mgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+#metricsPanel .mcard{background:#152033;border:1px solid #334155;border-radius:12px;padding:10px}
+#metricsPanel .mcard span{display:block;color:#94a3b8;font-size:11px}#metricsPanel .mcard strong{font-size:22px}
+#metricsPanel label{display:block;font-size:12px;font-weight:750;margin:10px 0 5px}
+#metricsPanel select,#metricsPanel textarea{width:100%;background:#081321;color:#eef4ff;border:1px solid #334155;border-radius:10px;padding:9px}
+#metricsPanel textarea{min-height:74px;resize:vertical}
+#metricsPanel .mbtns{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+#metricsPanel button.mbtn{border:1px solid #334155;background:#152033;color:#eef4ff;border-radius:10px;padding:8px 10px;cursor:pointer;font-weight:700}
+#metricsPanel button.mprimary{background:#2563eb;border-color:#2563eb}
+#metricsPanel button.mok{background:#22c55e;border-color:#22c55e;color:#052e16}
+#metricsPanel hr{border:0;border-top:1px solid #334155;margin:14px 0}
+#metricsPanel .mbar{height:8px;background:#081321;border-radius:999px;overflow:hidden;border:1px solid #334155}
+#metricsPanel .mbar>div{height:100%;background:#38bdf8}
+</style>
+<button id="metricsFab" title="Abrir métricas">Métricas</button>
+<div id="metricsPanel" aria-label="Painel de métricas">
+  <h2>Métricas de uso</h2>
+  <div class="mmuted">Indicadores locais para acompanhar evolução e gerar relatório para análise no ChatGPT.</div>
+  <div class="mgrid">
+    <div class="mcard"><span>Sessões</span><strong id="mSessions">0</strong></div>
+    <div class="mcard"><span>Interações</span><strong id="mInteractions">0</strong></div>
+    <div class="mcard"><span>Avaliações</span><strong id="mRatings">0</strong></div>
+    <div class="mcard"><span>Efetividade média</span><strong id="mAverage">—</strong></div>
+  </div>
+  <div class="mmuted">Meta de efetividade</div>
+  <div class="mbar"><div id="mEffectBar" style="width:0%"></div></div>
+
+  <label>Como foi o resultado desta utilização?</label>
+  <select id="mRating">
+    <option value="">Selecione</option>
+    <option value="5">5 — Excelente, resolveu completamente</option>
+    <option value="4">4 — Bom, poucos ajustes</option>
+    <option value="3">3 — Parcial, precisou de ajustes</option>
+    <option value="2">2 — Fraco, muitos ajustes</option>
+    <option value="1">1 — Não resolveu</option>
+  </select>
+
+  <label>Precisou ajustar depois de usar?</label>
+  <select id="mAdjusted">
+    <option value="no">Não</option>
+    <option value="yes">Sim</option>
+  </select>
+
+  <label>Observação opcional</label>
+  <textarea id="mNote" placeholder="Ex.: resposta boa, mas faltou aprofundar explicações..."></textarea>
+
+  <div class="mbtns">
+    <button class="mbtn mok" id="mSaveFeedback">Registrar feedback</button>
+    <button class="mbtn" id="mMarkUse">Registrar uso</button>
+  </div>
+  <hr>
+  <div class="mmuted" id="mSummary"></div>
+  <div class="mbtns">
+    <button class="mbtn mprimary" id="mExportChatGPT">Relatório para ChatGPT</button>
+    <button class="mbtn" id="mExportJSON">Backup métricas</button>
+    <button class="mbtn" id="mResetMetrics">Zerar métricas</button>
+  </div>
+</div>
+<script id="metrics-module-script">
+(function(){
+  const APP=(document.title||location.pathname.split('/').pop()||'HTML App').trim();
+  const KEY='universalMetrics::'+APP;
+  const today=()=>new Date().toISOString();
+  const load=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{sessions:0,interactions:0,uses:0,feedback:[],startedAt:today()}}catch(e){return{sessions:0,interactions:0,uses:0,feedback:[],startedAt:today()}}};
+  let data=load(); data.sessions=(data.sessions||0)+1; localStorage.setItem(KEY,JSON.stringify(data));
+  const $=id=>document.getElementById(id);
+  function save(){localStorage.setItem(KEY,JSON.stringify(data));render()}
+  function avg(){if(!data.feedback.length)return 0;return data.feedback.reduce((a,x)=>a+Number(x.rating||0),0)/data.feedback.length}
+  function adjustedRate(){if(!data.feedback.length)return 0;return data.feedback.filter(x=>x.adjusted==='yes').length/data.feedback.length*100}
+  function render(){
+    $('mSessions').textContent=data.sessions||0;$('mInteractions').textContent=data.interactions||0;$('mRatings').textContent=data.feedback.length;
+    const a=avg();$('mAverage').textContent=a?a.toFixed(1)+'/5':'—';$('mEffectBar').style.width=(a/5*100)+'%';
+    $('mSummary').textContent=`Usos registrados: ${data.uses||0} • Taxa de ajuste pós-uso: ${adjustedRate().toFixed(0)}% • Dados armazenados somente neste navegador.`;
+  }
+  $('metricsFab').onclick=()=>{$('metricsPanel').style.display=$('metricsPanel').style.display==='block'?'none':'block';render()};
+  $('mMarkUse').onclick=()=>{data.uses=(data.uses||0)+1;save();alert('Uso registrado.')};
+  $('mSaveFeedback').onclick=()=>{
+    const rating=$('mRating').value;if(!rating)return alert('Selecione uma avaliação.');
+    data.feedback.push({at:today(),rating:Number(rating),adjusted:$('mAdjusted').value,note:$('mNote').value.trim()});
+    data.uses=Math.max(data.uses||0,data.feedback.length);$('mRating').value='';$('mNote').value='';save();alert('Feedback registrado.');
+  };
+  document.addEventListener('click',e=>{
+    const el=e.target.closest('button,a,[role="button"]');if(!el||el.id.startsWith('m')||el.id==='metricsFab')return;
+    data.interactions=(data.interactions||0)+1;
+    if(/copiar|copy|salvar|save|responder|próximo|proximo|gerar|generate|check|submit/i.test((el.innerText||el.title||''))) data.uses=(data.uses||0)+1;
+    localStorage.setItem(KEY,JSON.stringify(data));
+  },true);
+  function download(content,name,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+  $('mExportJSON').onclick=()=>download(JSON.stringify({app:APP,exportedAt:today(),metrics:data},null,2),'metricas-'+APP.replace(/[^\w-]+/g,'_')+'.json','application/json');
+  $('mExportChatGPT').onclick=()=>{
+    const notes=data.feedback.slice(-20).map((x,i)=>`${i+1}. ${x.at.slice(0,10)} | nota ${x.rating}/5 | ajuste: ${x.adjusted==='yes'?'sim':'não'}${x.note?' | '+x.note:''}`).join('\n');
+    const report=`RELATÓRIO DE MÉTRICAS PARA ANÁLISE NO CHATGPT\n\nAplicativo: ${APP}\nPeríodo desde: ${data.startedAt}\nExportado em: ${today()}\nSessões: ${data.sessions||0}\nInterações: ${data.interactions||0}\nUsos registrados: ${data.uses||0}\nAvaliações: ${data.feedback.length}\nEfetividade média: ${avg()?avg().toFixed(2)+'/5':'sem dados'}\nTaxa de ajuste pós-uso: ${adjustedRate().toFixed(1)}%\n\nFEEDBACKS RECENTES\n${notes||'Nenhum feedback registrado.'}\n\nINSTRUÇÃO PARA ANÁLISE\nAnalise estes dados e identifique: pontos fortes, gargalos, funcionalidades pouco úteis, sinais de complexidade desnecessária, oportunidades de melhoria e prioridades para a próxima versão.`;
+    download(report,'relatorio-chatgpt-'+APP.replace(/[^\w-]+/g,'_')+'.txt','text/plain;charset=utf-8');
+  };
+  $('mResetMetrics').onclick=()=>{if(confirm('Zerar todas as métricas deste aplicativo?')){data={sessions:1,interactions:0,uses:0,feedback:[],startedAt:today()};save()}};
+  render();
+})();
+</script>
+<!-- ===== FIM MÓDULO UNIVERSAL DE MÉTRICAS ===== -->
+
+<script>
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));}
+</script>
+
+</body></html>

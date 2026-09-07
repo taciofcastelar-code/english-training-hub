@@ -1,0 +1,13 @@
+{
+  "name": "English Training Hub V2 Robust",
+  "short_name": "English Hub",
+  "description": "Treinamento interativo de inglês geral, profissional, clínico, offshore e marítimo.",
+  "lang": "pt-BR",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#f4f7fb",
+  "theme_color": "#101b34",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}

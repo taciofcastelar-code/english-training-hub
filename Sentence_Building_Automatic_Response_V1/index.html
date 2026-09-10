@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#111827">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Sentence Building + Automatic Response</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#111827;--muted:#667085;--line:#e5e7eb;--ok:#166534;--bad:#991b1b;--accent:#1f2937}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink)}
+body{-webkit-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;user-select:text}
+.app{max-width:680px;margin:auto;min-height:100vh;padding:16px 14px 90px}
+.top{display:flex;align-items:center;justify-content:space-between;margin:4px 0 14px}
+h1{font-size:20px;margin:0}.small{font-size:12px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.pill{display:inline-block;padding:6px 10px;border-radius:999px;background:#eef2f7;font-size:12px;font-weight:700;margin-bottom:10px}
+.prompt{font-size:24px;font-weight:750;line-height:1.25;margin:12px 0}
+.translation{font-size:14px;color:var(--muted);margin-top:-4px}
+input{width:100%;padding:14px 15px;border:1px solid #cfd4dc;border-radius:12px;font-size:17px;outline:none;background:#fff}
+button{border:0;border-radius:12px;padding:13px 15px;font-size:15px;font-weight:700;cursor:pointer}
+.primary{background:var(--accent);color:white;width:100%;margin-top:10px}
+.secondary{background:#eef2f7;color:var(--ink)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.feedback{margin-top:12px;padding:12px;border-radius:12px;font-size:14px;line-height:1.45}
+.feedback.ok{background:#ecfdf3;color:var(--ok)} .feedback.bad{background:#fef2f2;color:var(--bad)}
+.hidden{display:none!important}
+.progress{height:8px;background:#e5e7eb;border-radius:99px;overflow:hidden;margin:8px 0 2px}
+.progress>div{height:100%;background:#111827;width:0%;transition:.25s}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat{padding:10px;border:1px solid var(--line);border-radius:12px}.stat b{display:block;font-size:18px}
+.timer{font-variant-numeric:tabular-nums;font-size:36px;font-weight:800;text-align:center;margin:10px 0}
+.tip{font-size:13px;line-height:1.45;color:var(--muted)}
+.bottom{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.95);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom));display:flex;gap:8px;justify-content:center}
+.bottom button{max-width:320px;flex:1}
+.badge{font-size:11px;font-weight:800;letter-spacing:.04em;color:var(--muted)}
+.review-item{padding:10px 0;border-bottom:1px solid var(--line)}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div>
+      <div class="badge">MVP V1</div>
+      <h1>Sentence Building</h1>
+    </div>
+    <button class="secondary" id="resetBtn">Reiniciar</button>
+  </div>
+
+  <div id="home">
+    <div class="card">
+      <span class="pill">Objetivo</span>
+      <div class="prompt" style="font-size:21px">Transformar inglês conhecido em frases automáticas.</div>
+      <p class="tip">Fale em voz alta antes de digitar. O foco é: construir → recuperar → responder sem traduzir palavra por palavra.</p>
+      <div class="stats">
+        <div class="stat"><b id="sDone">0</b><span class="small">respondidas</span></div>
+        <div class="stat"><b id="sIndependent">0</b><span class="small">sozinho</span></div>
+        <div class="stat"><b id="sNeedHelp">0</b><span class="small">com ajuda</span></div>
+      </div>
+      <button class="primary" id="startBtn">Iniciar sessão</button>
+    </div>
+    <div class="card">
+      <b>Estruturas da V1</b>
+      <p class="tip">I am · I work · I have · I need · I go · I usually · I don't · Do you…? · What do you…? · I check / I assess</p>
+      <p class="tip">Base principal: Units 1, 4, 8, 10 e 12 da sua apostila. “check/assess” foram incluídos como personalização do diagnóstico feito nesta conversa.</p>
+    </div>
+  </div>
+
+  <div id="trainer" class="hidden">
+    <div class="card">
+      <div class="small" id="stepLabel"></div>
+      <div class="progress"><div id="bar"></div></div>
+    </div>
+    <div class="card" id="exerciseCard">
+      <span class="pill" id="modePill">BUILD</span>
+      <div class="prompt" id="prompt"></div>
+      <div class="translation hidden" id="translation"></div>
+      <div id="inputWrap">
+        <input id="answer" autocomplete="off" autocapitalize="sentences" placeholder="Digite sua resposta depois de falar em voz alta">
+        <button class="primary" id="checkBtn">Verificar</button>
+        <div class="grid2">
+          <button class="secondary" id="hintBtn">Preciso de ajuda</button>
+          <button class="secondary" id="listenBtn">Ouvir pergunta</button>
+        </div>
+      </div>
+      <div id="rapidWrap" class="hidden">
+        <div class="timer" id="timer">5.0</div>
+        <p class="tip">Fale a resposta em voz alta. Depois marque o que aconteceu.</p>
+        <div class="grid2">
+          <button class="secondary" id="rapidOk">Consegui falar</button>
+          <button class="secondary" id="rapidFail">Travei / precisei pensar</button>
+        </div>
+        <button class="secondary" style="width:100%;margin-top:8px" id="showModel">Mostrar resposta-modelo</button>
+      </div>
+      <div id="feedback" class="feedback hidden"></div>
+      <button class="primary hidden" id="nextBtn">Próximo</button>
+    </div>
+  </div>
+
+  <div id="summary" class="hidden">
+    <div class="card">
+      <span class="pill">SESSÃO CONCLUÍDA</span>
+      <div class="prompt" style="font-size:22px">Resultado da sessão</div>
+      <div class="stats">
+        <div class="stat"><b id="rDone">0</b><span class="small">itens</span></div>
+        <div class="stat"><b id="rIndependent">0</b><span class="small">sozinho</span></div>
+        <div class="stat"><b id="rHelp">0</b><span class="small">ajuda</span></div>
+      </div>
+      <p class="tip" id="summaryText"></p>
+      <button class="primary" id="againBtn">Treinar novamente</button>
+    </div>
+    <div class="card">
+      <b>Erros / pontos para reteste</b>
+      <div id="reviewList" class="tip"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const exercises = [
+ {mode:'recognize', prompt:'work', translation:'trabalhar', answers:['trabalhar'], model:'work = trabalhar'},
+ {mode:'build', prompt:'Complete: I ___ a nurse.', answers:["am"], model:"I am a nurse.", error:"Profissão/identidade: use I am, não I work."},
+ {mode:'build', prompt:'Complete: I ___ at a hospital.', answers:["work"], model:"I work at a hospital.", error:"Rotina/ação: use I + verbo. Aqui: I work."},
+ {mode:'rapid', prompt:'Where do you work?', model:'I work at a hospital.'},
+ {mode:'build', prompt:'Complete: I ___ two children.', answers:["have"], model:"I have two children.", error:"Com I/you/we/they, use have."},
+ {mode:'build', prompt:'Complete: I ___ some help.', answers:["need"], model:"I need some help.", error:"I need... = Eu preciso..."},
+ {mode:'rapid', prompt:'What do you need?', model:'I need some help.'},
+ {mode:'build', prompt:'Complete: I ___ study English every day.', answers:["usually"], model:"I usually study English every day.", error:"Usually vem normalmente antes do verbo principal."},
+ {mode:'rapid', prompt:'What do you usually do in the morning?', model:'I usually study English in the morning.'},
+ {mode:'build', prompt:"Complete: I ___ work there.", answers:["don't","do not"], model:"I don't work there.", error:"Negativa no Simple Present com I: I don't + verbo."},
+ {mode:'rapid', prompt:'Do you work every day?', model:"Yes, I do. / No, I don't."},
+ {mode:'recognize', prompt:'assess', translation:'avaliar', answers:['avaliar'], model:'assess = avaliar'},
+ {mode:'build', prompt:"Complete: I assess the ___ vital signs.", answers:["patient's","patient’s"], model:"I assess the patient's vital signs.", error:"Para 'do paciente', use patient's."},
+ {mode:'rapid', prompt:'What do you assess first?', model:"I assess the patient's vital signs first."},
+ {mode:'build', prompt:"Complete: I check the patient's ___.", answers:["vital signs"], model:"I check the patient's vital signs.", error:"O bloco é vital signs = sinais vitais."},
+ {mode:'rapid', prompt:'What do you check first?', model:"I check the patient's vital signs first."}
+];
+
+let state = JSON.parse(localStorage.getItem('sb_v1_state') || '{"done":0,"independent":0,"help":0,"reviews":[]}');
+let session = {i:0, done:0, independent:0, help:0, reviews:[], usedHint:false};
+let rapidTimer=null, t=5.0;
+
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem('sb_v1_state', JSON.stringify(state)); updateHome();}
+function updateHome(){ $('sDone').textContent=state.done; $('sIndependent').textContent=state.independent; $('sNeedHelp').textContent=state.help; }
+function normalize(s){return s.toLowerCase().trim().replace(/[’]/g,"'").replace(/[.!?,]/g,'').replace(/\s+/g,' ')}
+function show(el, yes=true){el.classList.toggle('hidden', !yes)}
+function speak(text){
+  if(!('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text.replace(/^Complete:\s*/,''));
+  u.lang='en-US'; u.rate=.82; speechSynthesis.speak(u);
+}
+function start(){
+ session={i:0,done:0,independent:0,help:0,reviews:[],usedHint:false};
+ show($('home'),false); show($('summary'),false); show($('trainer'),true); render();
+}
+function render(){
+ clearInterval(rapidTimer);
+ const ex=exercises[session.i];
+ session.usedHint=false;
+ $('stepLabel').textContent=`Item ${session.i+1} de ${exercises.length}`;
+ $('bar').style.width=((session.i)/exercises.length*100)+'%';
+ $('modePill').textContent=ex.mode.toUpperCase();
+ $('prompt').textContent=ex.prompt;
+ $('translation').textContent='';
+ show($('translation'),false); show($('feedback'),false); show($('nextBtn'),false);
+ $('answer').value='';
+ show($('inputWrap'), ex.mode!=='rapid');
+ show($('rapidWrap'), ex.mode==='rapid');
+ if(ex.mode==='recognize') $('answer').placeholder='Digite o significado em português';
+ else $('answer').placeholder='Digite sua resposta depois de falar em voz alta';
+ if(ex.mode==='rapid') startRapid();
+}
+function startRapid(){
+ t=5.0; $('timer').textContent=t.toFixed(1);
+ rapidTimer=setInterval(()=>{
+   t-=0.1; if(t<=0){t=0;clearInterval(rapidTimer)}
+   $('timer').textContent=t.toFixed(1);
+ },100);
+}
+function feedback(ok,msg){
+ const f=$('feedback'); f.className='feedback '+(ok?'ok':'bad'); f.textContent=msg; show(f,true);
+}
+function record(ok, needHelp=false, review=''){
+ session.done++; state.done++;
+ if(ok && !needHelp){session.independent++;state.independent++}
+ if(needHelp){session.help++;state.help++}
+ if(review){session.reviews.push(review);state.reviews.push(review);state.reviews=state.reviews.slice(-30)}
+ save();
+}
+$('checkBtn').onclick=()=>{
+ const ex=exercises[session.i], ans=normalize($('answer').value);
+ if(!ans) return feedback(false,'Fale primeiro e depois digite sua resposta.');
+ const ok=ex.answers.some(a=>normalize(a)===ans);
+ if(ok){
+   feedback(true,'Correto. '+ex.model);
+   record(true,session.usedHint);
+   show($('nextBtn'),true); show($('checkBtn'),false);
+ }else{
+   feedback(false,(ex.error||'Ainda não.')+' Resposta-modelo: '+ex.model);
+   record(false,true,ex.error||ex.model);
+   show($('nextBtn'),true); show($('checkBtn'),false);
+ }
+}
+$('hintBtn').onclick=()=>{
+ const ex=exercises[session.i]; session.usedHint=true;
+ $('translation').textContent = ex.translation ? ex.translation : ('Modelo: '+ex.model);
+ show($('translation'),true);
+}
+$('listenBtn').onclick=()=>speak(exercises[session.i].prompt);
+$('nextBtn').onclick=()=>{
+ $('checkBtn').classList.remove('hidden');
+ session.i++;
+ if(session.i>=exercises.length) finish(); else render();
+}
+$('rapidOk').onclick=()=>{
+ clearInterval(rapidTimer);
+ const ex=exercises[session.i];
+ feedback(true,'Resposta-modelo: '+ex.model);
+ record(true,false);
+ show($('nextBtn'),true); show($('rapidWrap'),false);
+}
+$('rapidFail').onclick=()=>{
+ clearInterval(rapidTimer);
+ const ex=exercises[session.i];
+ feedback(false,'Reteste necessário. Resposta-modelo: '+ex.model);
+ record(false,true,'Resposta rápida: '+ex.prompt+' → '+ex.model);
+ show($('nextBtn'),true); show($('rapidWrap'),false);
+}
+$('showModel').onclick=()=>{
+ const ex=exercises[session.i]; session.usedHint=true;
+ feedback(false,'Modelo: '+ex.model);
+}
+function finish(){
+ show($('trainer'),false); show($('summary'),true);
+ $('rDone').textContent=session.done; $('rIndependent').textContent=session.independent; $('rHelp').textContent=session.help;
+ const pct=session.done?Math.round(session.independent/session.done*100):0;
+ $('summaryText').textContent=`Independência nesta sessão: ${pct}%. A meta não é perfeição: é reduzir ajuda e tempo de resposta a cada repetição.`;
+ const unique=[...new Set(session.reviews)];
+ $('reviewList').innerHTML=unique.length?unique.map(x=>`<div class="review-item">${x}</div>`).join(''):'Nenhum ponto crítico registrado nesta sessão.';
+}
+$('startBtn').onclick=start; $('againBtn').onclick=start;
+$('resetBtn').onclick=()=>{ if(confirm('Apagar todo o progresso salvo neste aparelho?')){localStorage.removeItem('sb_v1_state');state={done:0,independent:0,help:0,reviews:[]};updateHome();location.reload();}}
+updateHome();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+</script>
+</body>
+</html>
